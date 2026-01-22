@@ -199,7 +199,3 @@ user_id (FOREIGN KEY → users)
 text
 created_at
 ```
-
-## 👨‍💻 Автор
-
-Разработано с использованием GitHub Copilot (Claude Haiku 4.5)
