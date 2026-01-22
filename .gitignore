@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env
+.env.example
+.env.local
+.DS_Store
+*.log
+.next/
+.vscode/
+.idea/
+*.swp
+*.swo
+coverage/
+.nyc_output/
+redis_data/
+postgres_data/
