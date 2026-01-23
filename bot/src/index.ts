@@ -1,15 +1,15 @@
+import './config/env' 
 import { Telegraf } from "telegraf"
 import { initializeDatabase } from "./database"
 import { onAnalyzeCommand } from "./handlers/analyzeHandler"
 import { onMessage } from "./handlers/messageHandler"
 import { onStatsCallback, onStatsCommand } from "./handlers/statsHandler"
-import { onWordCloudCommand } from "./handlers/wordcloudHandler"
 import { initializeRedis } from "./services/RedisService"
 
 const token = process.env.TELEGRAM_TOKEN
 
 if (!token) {
-	throw new Error("TELEGRAM_TOKEN environment variable is not set")
+	throw new Error("Нет telegram токена")
 }
 
 const bot = new Telegraf(token)
@@ -37,16 +37,11 @@ async function start() {
 		// Analyze command
 		bot.command("analyze", onAnalyzeCommand)
 
-		// Word cloud command (custom feature)
-		bot.command("wordcloud", onWordCloudCommand)
-
 		// Handle all text messages
 		bot.on("message", onMessage)
 
 		// Start bot
 		bot.launch()
-
-		console.log("✅ Bot started successfully")
 
 		// Enable graceful stop
 		process.once("SIGINT", () => bot.stop("SIGINT"))

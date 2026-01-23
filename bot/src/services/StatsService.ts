@@ -48,7 +48,6 @@ export class StatsService {
 		const totalUsers = await MessageModel.getTotalUniqueChatUsers(chatId)
 
 		const result = { stats, totalMessages, totalUsers }
-
 		// Save to cache
 		try {
 			await RedisService.set(cacheKey, result, CACHE_TTL)

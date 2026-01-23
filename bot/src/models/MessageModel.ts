@@ -21,7 +21,24 @@ export class MessageModel {
 		return result
 	}
 
-	static async getMessagesByChatId(chatId: number): Promise<IMessage[]> {
+	// Helper: Convert telegram_id to internal chat_id
+	private static async getTelegramChatInternalId(
+		telegramChatId: number,
+	): Promise<number> {
+		const result = await queryOne<{ id: number }>(
+			"SELECT id FROM chats WHERE telegram_id = $1",
+			[telegramChatId],
+		)
+		if (!result) {
+			throw new Error(`Chat with telegram_id ${telegramChatId} not found`)
+		}
+		return result.id
+	}
+
+	static async getMessagesByChatId(
+		telegramChatId: number,
+	): Promise<IMessage[]> {
+		const chatId = await this.getTelegramChatInternalId(telegramChatId)
 		return await query<IMessage>(
 			"SELECT id, chat_id, user_id, text, created_at FROM messages WHERE chat_id = $1 ORDER BY created_at ASC",
 			[chatId],
@@ -56,19 +73,14 @@ export class MessageModel {
 	}
 
 	static async getTopUsersByMessages(
-		chatId: number,
+		telegramChatId: number,
 		limit: number = 10,
 		daysAgo?: number,
 	): Promise<IStats[]> {
+		const chatId = await this.getTelegramChatInternalId(telegramChatId)
+
 		let queryStr = `
-      SELECT 
-        u.id as user_id, 
-        u.username, 
-        u.first_name,
-        COUNT(m.id)::integer as message_count
-      FROM messages m
-      JOIN users u ON m.user_id = u.id
-      WHERE m.chat_id = $1
+      SELECT u.id as user_id, u.username, u.first_name, COUNT(m.id)::integer as message_count FROM messages m JOIN users u ON m.user_id = u.id WHERE m.chat_id = $1
     `
 
 		const params: any[] = [chatId]
@@ -84,14 +96,16 @@ export class MessageModel {
     `
 
 		params.push(limit)
-
+		console.log(params)
 		return await query<IStats>(queryStr, params)
 	}
 
 	static async getTotalMessageCount(
-		chatId: number,
+		telegramChatId: number,
 		daysAgo?: number,
 	): Promise<number> {
+		const chatId = await this.getTelegramChatInternalId(telegramChatId)
+
 		let countQuery = "SELECT COUNT(*) as count FROM messages WHERE chat_id = $1"
 		const params: any[] = [chatId]
 
@@ -104,11 +118,13 @@ export class MessageModel {
 	}
 
 	static async getMessagesByChatAndUserWithTimeFilter(
-		chatId: number,
+		telegramChatId: number,
 		userId: number,
 		daysAgo: number,
 		limit: number = 100,
 	): Promise<IMessage[]> {
+		const chatId = await this.getTelegramChatInternalId(telegramChatId)
+
 		return await query<IMessage>(
 			`SELECT id, chat_id, user_id, text, created_at FROM messages 
        WHERE chat_id = $1 AND user_id = $2 AND created_at >= NOW() - INTERVAL '${daysAgo} days'
@@ -118,7 +134,11 @@ export class MessageModel {
 		)
 	}
 
-	static async getTotalUniqueChatUsers(chatId: number): Promise<number> {
+	static async getTotalUniqueChatUsers(
+		telegramChatId: number,
+	): Promise<number> {
+		const chatId = await this.getTelegramChatInternalId(telegramChatId)
+
 		const result = await queryOne<{ count: number }>(
 			`SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE chat_id = $1`,
 			[chatId],

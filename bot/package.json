@@ -4,8 +4,8 @@
 	"description": "Telegram Bot with Analytics and LLM Integration",
 	"main": "dist/index.js",
 	"scripts": {
-		"dev": "ts-node src/index.ts",
-		"dev:api": "ts-node src/api.ts",
+		"dev": "tsx watch src/index.ts",
+		"dev:api": "tsx watch src/api.ts",
 		"build": "tsc",
 		"start": "concurrently \"node dist/index.js\" \"node dist/api.js\"",
 		"start:bot": "node dist/index.js",
@@ -21,7 +21,8 @@
 	"license": "ISC",
 	"type": "commonjs",
 	"dependencies": {
-		"@google/generative-ai": "^0.3.0",
+		"@google/genai": "^1.38.0",
+		"@google/generative-ai": "^0.24.1",
 		"concurrently": "^8.2.2",
 		"dotenv": "^16.3.1",
 		"pg": "^8.11.3",
@@ -33,6 +34,7 @@
 		"@types/pg": "^8.11.2",
 		"@vitest/ui": "^1.1.0",
 		"ts-node": "^10.9.2",
+		"tsx": "^4.21.0",
 		"typescript": "^5.3.3",
 		"vitest": "^1.6.1"
 	}

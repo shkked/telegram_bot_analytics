@@ -8,42 +8,43 @@ const TIME_PERIODS: { [key: string]: number | undefined } = {
 	all: undefined,
 }
 
-export async function onStatsCommand(ctx: Context): Promise<void> {
+// TODO Поменять any на Context из telegraf
+export async function onStatsCommand(ctx: any): Promise<void> {
 	try {
 		if (!ctx.chat) {
-			await ctx.reply("This command only works in group chats")
+			await ctx.reply("Это команда работает только в групповых чатах")
 			return
 		}
 
-		const chatId = ctx.chat.id
+		const chatId = ctx.update.message.chat.id
 
 		// Get stats for all time
+		// TODO решить проблему с переводом на английский и необнолвением данных. Хотя в бд всё ок
 		const stats = await StatsService.getTopUsers(chatId, 10)
-
-		let message = "📊 <b>Chat Statistics (All Time)</b>\n\n"
-		message += "<b>Top 10 Users:</b>\n"
+		let message = "📊 <b>Статистика чата за всё время</b>\n\n"
+		message += "<b>Топ 10 пользователей:</b>\n"
 
 		stats.stats.forEach((stat, index) => {
 			const name = stat.username
 				? `@${stat.username}`
-				: stat.first_name || "Unknown"
+				: stat.first_name || "Неизвестно"
 			message += `${index + 1}. ${name} - <b>${
 				stat.message_count
-			}</b> messages\n`
+			}</b> сообщений\n`
 		})
 
-		message += `\n<i>Total: ${stats.totalMessages} messages from ${stats.totalUsers} users</i>`
+		message += `\n<i>Всего: ${stats.totalMessages} сообщений от ${stats.totalUsers} пользователей</i>`
 
 		// Create inline keyboard for filtering
 		const keyboard = {
 			inline_keyboard: [
 				[
-					{ text: "📈 Today", callback_data: "stats_today" },
-					{ text: "📊 Week", callback_data: "stats_week" },
+					{ text: "📈 Сегодня", callback_data: "stats_today" },
+					{ text: "📊 За неделю", callback_data: "stats_week" },
 				],
 				[
-					{ text: "📅 Month", callback_data: "stats_month" },
-					{ text: "🔄 All Time", callback_data: "stats_all" },
+					{ text: "📅 Месяц", callback_data: "stats_month" },
+					{ text: "🔄 За всё время", callback_data: "stats_all" },
 				],
 			],
 		}

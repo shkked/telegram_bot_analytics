@@ -35,12 +35,13 @@ export interface IStats {
 }
 
 export interface ICacheConfig {
-	ttl: number // in seconds
+	ttl: number 
 }
 
 export interface IGeminiAnalysis {
 	style: string
 	topics: string[]
+	message_length: string
 	activity_pattern: string
 	tone: string
 	features: string

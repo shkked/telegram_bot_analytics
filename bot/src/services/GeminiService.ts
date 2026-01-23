@@ -1,11 +1,16 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenAI } from "@google/genai"
 import { MessageModel } from "../models/MessageModel"
 import { UserModel } from "../models/UserModel"
 import { IGeminiAnalysis } from "../types"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const apiKey = process.env.GEMINI_API_KEY || ""
+if (!apiKey) {
+	throw new Error("Нет ключа GEMINI_API_KEY")
+}
+const ai = new GoogleGenAI({ apiKey })
 
 export class GeminiService {
+	// TODO Решить проблему Analysis error: Error: Failed to analyze user with Gemini
 	static async analyzeUser(
 		userId: number,
 		daysAgo: number = 30,
@@ -28,28 +33,32 @@ export class GeminiService {
 
 		const messagesText = messages.map(m => m.text).join("\n")
 
-		const prompt = `Analyze the following Telegram messages from a user and provide insights in JSON format with the following structure:
+		const prompt = `Проанализируй	следующие сообщения Telegram от пользователя и предоставь инсайты в формате JSON со следующей структурой:
 {
-  "style": "brief description of communication style (formal/informal/casual/etc)",
-  "topics": ["list", "of", "main", "topics"],
-  "activity_pattern": "description of when user is most active",
-  "tone": "positive/neutral/negative or mixed",
-  "features": "unique characteristics, emoji usage, question frequency, etc"
+  "Стиль общения": "Описание стиля общения пользователя (формальный/неформальный/круглый)",
+  "Основные темы, которые поднимает пользователь": ["Список", "основных", "тем"],
+  "Средняя длина сообщений": "Описание средней длины сообщений (короткие/средние/длинные)",
+  "Активность по времени суток": "Описание активности пользователя по времени суток (утро/день/вечер/ночь)",
+  "Тональность": "Описание общей тональности сообщений (позитивная/негативная/нейтральная)",
+  "Частые слова или выражения": "Описание частых слов или выражений, используемых пользователем"
 }
 
-Messages to analyze:
+Сообщения для анализа:
 ${messagesText}
 
-Return ONLY valid JSON, no additional text.`
+Пришли только JSON без дополнительного текста.`
 
 		try {
-			const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
-			const result = await model.generateContent(prompt)
-			const responseText = result.response.text()
+			const result = await ai.models.generateContent({
+				model: "gemini-3-flash-preview",
+				contents: prompt,
+			})
+			const responseText = result.text || ""
 
 			// Extract JSON from response (handle markdown code blocks)
 			let jsonText = responseText
 			const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/)
+			console.log({ result, jsonText, jsonMatch })
 			if (jsonMatch) {
 				jsonText = jsonMatch[1]
 			}
@@ -57,11 +66,18 @@ Return ONLY valid JSON, no additional text.`
 			const parsed = JSON.parse(jsonText)
 
 			return {
-				style: parsed.style || "Unknown",
-				topics: Array.isArray(parsed.topics) ? parsed.topics : [],
-				activity_pattern: parsed.activity_pattern || "Unknown",
-				tone: parsed.tone || "Neutral",
-				features: parsed.features || "No specific features",
+				style: parsed["Стиль общения"] || "Неизвестно",
+				topics: Array.isArray(
+					parsed["Основные темы, которые поднимает пользователь"],
+				)
+					? parsed["Основные темы, которые поднимает пользователь"]
+					: [],
+				message_length: parsed["Средняя длина сообщений"] || "Неизвестно",
+				activity_pattern: parsed["Активность по времени суток"] || "Неизвестно",
+				tone: parsed["Тональность"] || "Нейтральная",
+				features:
+					parsed["Частые слова или выражения"] ||
+					"Нет особых слов или выражений",
 				message_count: messages.length,
 				days_period: daysAgo,
 			}

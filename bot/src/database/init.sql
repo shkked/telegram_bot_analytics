@@ -1,3 +1,8 @@
+-- Drop tables if they exist (to reset schema)
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS chats CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 -- Create chats table
 CREATE TABLE IF NOT EXISTS chats (
     id SERIAL PRIMARY KEY,

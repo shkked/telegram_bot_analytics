@@ -1,3 +1,4 @@
+import './config/env'
 import { createServer, IncomingMessage, ServerResponse } from "http"
 import { initializeDatabase } from "./database"
 import { UserModel } from "./models/UserModel"

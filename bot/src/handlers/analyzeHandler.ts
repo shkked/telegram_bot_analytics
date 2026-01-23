@@ -49,15 +49,17 @@ export async function onAnalyzeCommand(ctx: Context): Promise<void> {
 			const userName = targetUser.username
 				? `@${targetUser.username}`
 				: targetUser.first_name || "User"
-			let message = `🔍 <b>Analysis of ${userName}</b>\n\n`
-			message += `<b>Style:</b> ${analysis.style}\n`
-			message += `<b>Tone:</b> ${analysis.tone}\n`
-			message += `<b>Topics:</b> ${
-				analysis.topics.join(", ") || "Not identified"
+
+			let message = `🔍 <b>Анализ пользователя ${userName}</b>\n\n`
+			message += `<b>Стиль общения:</b> ${analysis.style}\n`
+			message += `<b>Тональность:</b> ${analysis.tone}\n`
+			message += `<b>Основные темы:</b> ${
+				analysis.topics.join(", ") || "Не определены"
 			}\n`
-			message += `<b>Activity Pattern:</b> ${analysis.activity_pattern}\n`
-			message += `<b>Features:</b> ${analysis.features}\n\n`
-			message += `<i>Based on ${analysis.message_count} messages from last ${analysis.days_period} days</i>`
+			message += `<b>Средняя длина сообщений:</b> ${analysis.message_length}\n`
+			message += `<b>Активность по времени суток:</b> ${analysis.activity_pattern}\n`
+			message += `<b>Частые слова или выражения:</b> ${analysis.features}\n\n`
+			message += `<i>Основано на ${analysis.message_count} сообщениях за последние ${analysis.days_period} дней</i>`
 
 			await ctx.telegram.editMessageText(
 				ctx.chat!.id,

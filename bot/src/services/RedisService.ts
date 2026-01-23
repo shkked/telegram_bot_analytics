@@ -1,18 +1,31 @@
 import { createClient } from "redis"
 
-let redisClient: ReturnType<typeof createClient>
+let redisClient: ReturnType<typeof createClient> | null = null
+let redisAvailable = false
 
 export async function initializeRedis(): Promise<void> {
 	redisClient = createClient({
 		url: process.env.REDIS_URL || "redis://localhost:6379",
+		socket: {
+			reconnectStrategy: false, // Отключить автоматическое переподключение
+		},
 	})
 
-	redisClient.on("error", err => {
-		console.error("Redis Client Error", err)
+	// Подавляем вывод ошибок подключения
+	redisClient.on("error", () => {
+		// Ошибки обрабатываются в catch блоке ниже
 	})
 
-	await redisClient.connect()
-	console.log("Redis connected")
+	try {
+		await redisClient.connect()
+		redisAvailable = true
+		console.log("✅ Redis connected")
+	} catch (error) {
+		console.warn("⚠️  Could not connect to Redis. Caching will be disabled.")
+		redisAvailable = false
+		// Отключаем слушание событий ошибок
+		redisClient?.removeAllListeners()
+	}
 }
 
 export function getRedisClient() {
