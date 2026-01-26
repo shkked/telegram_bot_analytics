@@ -5,7 +5,7 @@ import { UserModel } from "../models/UserModel"
 
 export async function onMessage(ctx: Context): Promise<void> {
 	try {
-		// Skip if not a message or not text
+		// Пропуск, если нет message или текста
 		if (!ctx.message || !("text" in ctx.message)) {
 			return
 		}
@@ -15,7 +15,7 @@ export async function onMessage(ctx: Context): Promise<void> {
 			return
 		}
 
-		// Get or create user
+		// Получение или создание пользователя
 		const user = await UserModel.findOrCreate(
 			message.from.id,
 			message.from.username,
@@ -23,25 +23,25 @@ export async function onMessage(ctx: Context): Promise<void> {
 			message.from.last_name,
 		)
 
-		// Get or create chat
+		// Получение или создание чата
 		if (!message.chat) {
 			return
 		}
 
 		const chat = await ChatModel.findOrCreate(
 			message.chat.id,
-			(message.chat as any).title || "Unknown",
+			(message.chat as any).title || "Неизвестно",
 		)
 
-		// Save message
+		// Сохранение сообщения
 		await MessageModel.create(chat.id, user.id, message.text)
 
 		console.log(
-			`Message from ${user.username || user.first_name} in ${
+			`Сообщение от ${user.username || user.first_name} в ${
 				chat.title
 			}: ${message.text.substring(0, 50)}`,
 		)
 	} catch (error) {
-		console.error("Error handling message:", error)
+		console.error("Ошибка обработки сообщения:", error)
 	}
 }

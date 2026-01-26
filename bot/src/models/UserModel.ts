@@ -8,11 +8,11 @@ export class UserModel {
 		firstName?: string,
 		lastName?: string,
 	): Promise<IUser> {
-		// Try to find existing user
+		// Пытаемся найти пользователя по telegramId
 		let user = await this.findByTelegramId(telegramId)
 
 		if (user) {
-			// Update user info if changed
+			// Обновляем данные пользователя, если они изменились
 			if (username || firstName || lastName) {
 				await this.update(user.id, {
 					username,
@@ -24,7 +24,7 @@ export class UserModel {
 			return user
 		}
 
-		// Create new user
+		// Создаем нового пользователя
 		return await this.create(telegramId, username, firstName, lastName)
 	}
 
@@ -42,7 +42,7 @@ export class UserModel {
 		)
 
 		if (!result) {
-			throw new Error("Failed to create user")
+			throw new Error("Ошибка при создании пользователя")
 		}
 
 		return result

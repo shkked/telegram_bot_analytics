@@ -16,38 +16,38 @@ const bot = new Telegraf(token)
 
 async function start() {
 	try {
-		// Wait for services to be ready
+		// Ожидаем, пока сервисы будут готовы
 		await new Promise(resolve => setTimeout(resolve, 3000))
 
-		// Initialize database
-		console.log("Initializing database...")
+		// Инициализируем базу данных
+		console.log("Инициализируем базу данных...")
 		initializeDatabase()
 
-		// Initialize Redis
-		console.log("Initializing Redis...")
+		// Инициализируем Redis
+		console.log("Инициализируем Redis...")
 		await initializeRedis()
 
-		// Register handlers
-		console.log("Registering handlers...")
+		// Регистрируем обработчики
+		console.log("Регистрируем обработчики...")
 
-		// Stats command
+		// Команда /stats
 		bot.command("stats", onStatsCommand)
 		bot.action(/^stats_/, onStatsCallback)
 
-		// Analyze command
+		// Команда /analyze
 		bot.command("analyze", onAnalyzeCommand)
 
-		// Handle all text messages
+		// Обработка сообщений
 		bot.on("message", onMessage)
 
-		// Start bot
+		// Запускаем бота
 		bot.launch()
 
-		// Enable graceful stop
+		// Обрабатываем сигналы остановки
 		process.once("SIGINT", () => bot.stop("SIGINT"))
 		process.once("SIGTERM", () => bot.stop("SIGTERM"))
 	} catch (error) {
-		console.error("❌ Failed to start bot:", error)
+		console.error("Ошибка при запуске бота", error)
 		process.exit(1)
 	}
 }

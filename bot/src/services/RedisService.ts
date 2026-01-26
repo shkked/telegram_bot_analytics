@@ -11,17 +11,12 @@ export async function initializeRedis(): Promise<void> {
 		},
 	})
 
-	// Подавляем вывод ошибок подключения
-	redisClient.on("error", () => {
-		// Ошибки обрабатываются в catch блоке ниже
-	})
-
 	try {
 		await redisClient.connect()
 		redisAvailable = true
-		console.log("✅ Redis connected")
+		console.log("Redis подключен")
 	} catch (error) {
-		console.warn("⚠️  Could not connect to Redis. Caching will be disabled.")
+		console.warn("Redis не удалось подключиться:", error)
 		redisAvailable = false
 		// Отключаем слушание событий ошибок
 		redisClient?.removeAllListeners()
@@ -31,7 +26,7 @@ export async function initializeRedis(): Promise<void> {
 export function getRedisClient() {
 	if (!redisClient) {
 		throw new Error(
-			"Redis client not initialized. Call initializeRedis() first.",
+			"Redis не инициализирован. Сначала вызовите initializeRedis().",
 		)
 	}
 	return redisClient

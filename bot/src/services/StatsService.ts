@@ -25,7 +25,7 @@ export class StatsService {
 			daysAgo ? `${daysAgo}d` : "all",
 		)
 
-		// Try to get from cache
+		// Проверяем кэш
 		try {
 			const cached = await RedisService.get(cacheKey)
 			if (cached) {
@@ -35,7 +35,7 @@ export class StatsService {
 			console.warn("Cache retrieval failed:", err)
 		}
 
-		// Get data from database
+		// Если нет в кэше, получаем из БД
 		const stats = await MessageModel.getTopUsersByMessages(
 			chatId,
 			limit,
@@ -48,7 +48,7 @@ export class StatsService {
 		const totalUsers = await MessageModel.getTotalUniqueChatUsers(chatId)
 
 		const result = { stats, totalMessages, totalUsers }
-		// Save to cache
+		// Сохраняем в кэш
 		try {
 			await RedisService.set(cacheKey, result, CACHE_TTL)
 		} catch (err) {
@@ -64,7 +64,7 @@ export class StatsService {
 	): Promise<{ messageCount: number; user: any }> {
 		const user = await UserModel.findById(userId)
 		if (!user) {
-			throw new Error("User not found")
+			throw new Error("Пользователь не найден")
 		}
 
 		const messages = daysAgo

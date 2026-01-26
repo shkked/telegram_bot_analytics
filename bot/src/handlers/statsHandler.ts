@@ -8,18 +8,15 @@ const TIME_PERIODS: { [key: string]: number | undefined } = {
 	all: undefined,
 }
 
-// TODO Поменять any на Context из telegraf
-export async function onStatsCommand(ctx: any): Promise<void> {
+export async function onStatsCommand(ctx: Context): Promise<void> {
 	try {
 		if (!ctx.chat) {
 			await ctx.reply("Это команда работает только в групповых чатах")
 			return
 		}
 
-		const chatId = ctx.update.message.chat.id
-
-		// Get stats for all time
-		// TODO решить проблему с переводом на английский и необнолвением данных. Хотя в бд всё ок
+		const chatId = (ctx as any).update.message.chat.id
+		// Получение статистики за всё время
 		const stats = await StatsService.getTopUsers(chatId, 10)
 		let message = "📊 <b>Статистика чата за всё время</b>\n\n"
 		message += "<b>Топ 10 пользователей:</b>\n"
@@ -35,7 +32,7 @@ export async function onStatsCommand(ctx: any): Promise<void> {
 
 		message += `\n<i>Всего: ${stats.totalMessages} сообщений от ${stats.totalUsers} пользователей</i>`
 
-		// Create inline keyboard for filtering
+		// Использовани inline keyboard для фильтрации
 		const keyboard = {
 			inline_keyboard: [
 				[
@@ -54,8 +51,8 @@ export async function onStatsCommand(ctx: any): Promise<void> {
 			reply_markup: keyboard,
 		})
 	} catch (error) {
-		console.error("Error in stats command:", error)
-		await ctx.reply("Failed to get statistics")
+		console.error("Ошибка при сборе статистики:", error)
+		await ctx.reply("Не удалось получить статистику")
 	}
 }
 
@@ -66,42 +63,42 @@ export async function onStatsCallback(ctx: Context): Promise<void> {
 		const daysAgo = TIME_PERIODS[period]
 
 		if (!ctx.chat) {
-			await ctx.answerCbQuery("Failed to determine chat", { show_alert: true })
+			await ctx.answerCbQuery("Не удалось определить чат", { show_alert: true })
 			return
 		}
 
 		const stats = await StatsService.getTopUsers(ctx.chat.id, 10, daysAgo)
 
 		let periodText = ""
-		if (period === "today") periodText = "Today"
-		else if (period === "week") periodText = "This Week"
-		else if (period === "month") periodText = "This Month"
-		else periodText = "All Time"
+		if (period === "today") periodText = "Сегодня"
+		else if (period === "week") periodText = "На этой неделе"
+		else if (period === "month") periodText = "В этом месяце"
+		else periodText = "За всё время"
 
-		let message = `📊 <b>Chat Statistics (${periodText})</b>\n\n`
-		message += "<b>Top 10 Users:</b>\n"
+		let message = `📊 <b>Статистика чата (${periodText})</b>\n\n`
+		message += "<b>Топ 10 пользователей:</b>\n"
 
 		stats.stats.forEach((stat, index) => {
 			const name = stat.username
 				? `@${stat.username}`
-				: stat.first_name || "Unknown"
+				: stat.first_name || "Неизвестно"
 			message += `${index + 1}. ${name} - <b>${
 				stat.message_count
-			}</b> messages\n`
+			}</b> сообщений\n`
 		})
 
-		message += `\n<i>Total: ${stats.totalMessages} messages from ${stats.totalUsers} users</i>`
+		message += `\n<i>Всего: ${stats.totalMessages} сообщений от ${stats.totalUsers} пользователей</i>`
 
-		// Create inline keyboard for filtering
+		// Использование inline keyboard для фильтрации
 		const keyboard = {
 			inline_keyboard: [
 				[
-					{ text: "📈 Today", callback_data: "stats_today" },
-					{ text: "📊 Week", callback_data: "stats_week" },
+					{ text: "📈 Сегодня", callback_data: "stats_today" },
+					{ text: "📊 За неделю", callback_data: "stats_week" },
 				],
 				[
-					{ text: "📅 Month", callback_data: "stats_month" },
-					{ text: "🔄 All Time", callback_data: "stats_all" },
+					{ text: "📅 Месяц", callback_data: "stats_month" },
+					{ text: "🔄 За всё время", callback_data: "stats_all" },
 				],
 			],
 		}
@@ -114,7 +111,9 @@ export async function onStatsCallback(ctx: Context): Promise<void> {
 			await ctx.answerCbQuery()
 		}
 	} catch (error) {
-		console.error("Error in stats callback:", error)
-		await ctx.answerCbQuery("Failed to get statistics", { show_alert: true })
+		console.error("Ошибка в callback статистики:", error)
+		await ctx.answerCbQuery("Не удалось получить статистику", {
+			show_alert: true,
+		})
 	}
 }

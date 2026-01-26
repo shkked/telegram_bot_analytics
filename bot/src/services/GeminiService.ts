@@ -11,6 +11,8 @@ const ai = new GoogleGenAI({ apiKey })
 
 export class GeminiService {
 	// TODO Решить проблему Analysis error: Error: Failed to analyze user with Gemini
+	// Gemini API error: Error: exception TypeError: fetch failed sending request
+	// Error:  end to JSON
 	static async analyzeUser(
 		userId: number,
 		daysAgo: number = 30,
@@ -58,11 +60,11 @@ ${messagesText}
 			// Extract JSON from response (handle markdown code blocks)
 			let jsonText = responseText
 			const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/)
-			console.log({ result, jsonText, jsonMatch })
+			// console.log({ result, jsonText, jsonMatch })
 			if (jsonMatch) {
 				jsonText = jsonMatch[1]
 			}
-
+			// console.log("Extracted JSON:", jsonText)
 			const parsed = JSON.parse(jsonText)
 
 			return {

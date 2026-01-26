@@ -9,18 +9,18 @@ const port = 3001
 
 async function start() {
 	try {
-		// Wait for services to be ready
+		// Ждем, когда сервисы будут готовы
 		await new Promise(resolve => setTimeout(resolve, 3000))
 
-		console.log("Initializing database...")
+		console.log("Инициализируем базу данных...")
 		initializeDatabase()
 
-		console.log("Initializing Redis...")
+		console.log("Инициализируем Redis...")
 		await initializeRedis()
 
 		const server = createServer(
 			async (req: IncomingMessage, res: ServerResponse) => {
-				// Enable CORS
+				// Включаем CORS
 				res.setHeader("Access-Control-Allow-Origin", "*")
 				res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 				res.setHeader("Access-Control-Allow-Headers", "Content-Type")
@@ -31,7 +31,7 @@ async function start() {
 					return
 				}
 
-				// Parse URL
+				// Парсим URL
 				const url = new URL(req.url || "", `http://${req.headers.host}`)
 				// GET /health
 				if (req.method === "GET" && url.pathname === "/health") {
@@ -54,7 +54,7 @@ async function start() {
 
 							if (!username) {
 								res.writeHead(400, { "Content-Type": "application/json" })
-								res.end(JSON.stringify({ error: "Username is required" }))
+								res.end(JSON.stringify({ error: "Имя пользователя обязательно" }))
 								return
 							}
 
@@ -62,7 +62,7 @@ async function start() {
 
 							if (!user) {
 								res.writeHead(404, { "Content-Type": "application/json" })
-								res.end(JSON.stringify({ error: "User not found" }))
+								res.end(JSON.stringify({ error: "Пользователь не найден" }))
 								return
 							}
 
@@ -75,7 +75,7 @@ async function start() {
 							res.writeHead(500, { "Content-Type": "application/json" })
 							res.end(
 								JSON.stringify({
-									error: error.message || "Internal server error",
+									error: error.message || "Произошла ошибка на сервере",
 								}),
 							)
 						}
@@ -86,15 +86,15 @@ async function start() {
 
 				// 404
 				res.writeHead(404, { "Content-Type": "application/json" })
-				res.end(JSON.stringify({ error: "Not found" }))
+				res.end(JSON.stringify({ error: "Не найдено" }))
 			},
 		)
 
 		server.listen(port, () => {
-			console.log(`✅ API Server running on port ${port}`)
+			console.log(`API сервер работает на порте ${port}`)
 		})
 	} catch (error) {
-		console.error("❌ Failed to start API server:", error)
+		console.error("Ошибка при запуске API сервера:", error)
 		process.exit(1)
 	}
 }
